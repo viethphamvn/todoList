@@ -1,8 +1,15 @@
+//Variables
+var totalTasks = 0;
+var completedTasks = 0;
+
 //Selectors
 const todoInput = document.querySelector(".todo-input");
 const todoButton = document.querySelector(".todo-button");
 const todoList = document.querySelector(".todo-list");
 const filterTodo = document.querySelector(".filter-dropdown");
+const indicator = document.querySelector(".indicator");
+const infoBanner = document.querySelector(".extra-area h1");
+const extraArea = document.querySelector(".extra-area");
 
 //Event Handlers
 
@@ -43,6 +50,9 @@ function addToDo(event) {
 
     //Add todo item to local storage
     saveToStorage([todoInput.value, true]);
+    //Update totalTasks and progress
+    totalTasks++;
+    updateProgress();
 
     //Clear input value
     todoInput.value = "";
@@ -62,6 +72,11 @@ function handleClick(event){
 
 function markDone(event){
     const parent = event.target.parentElement;
+    if (parent.classList.contains("completed")){
+        completedTasks--;
+    } else {
+        completedTasks++;
+    }
     parent.classList.toggle("completed");
 
     //Modify Localstorage
@@ -84,6 +99,9 @@ function markDone(event){
 
     localStorage.setItem('todos', JSON.stringify(todos));
 
+    //update progress
+    updateProgress();
+
 }
 
 function deleteItem(event){
@@ -91,22 +109,29 @@ function deleteItem(event){
     //Add animation
     parent.classList.add("falldown");
     //Add transition listener
-    parent.addEventListener('transitionend', function(){
-        //Modify Localstorage
-        let todos = JSON.parse(localStorage.getItem('todos'));
-        let tempTodos = todos;
+    parent.addEventListener('transitionend', function(e){
+        if (e.propertyName == "opacity"){
+            //Modify Localstorage
+            let todos = JSON.parse(localStorage.getItem('todos'));
+            let tempTodos = todos;
 
-        let index = -1;
-        tempTodos.forEach(e => {
-            index++;
-            if (e[0] === parent.childNodes[0].innerText){
-                todos.splice(index,1);
+            let index = -1;
+            tempTodos.forEach(e => {
+                index++;
+                if (e[0] === parent.childNodes[0].innerText){
+                    todos.splice(index,1);
+                }
+            });
+
+            localStorage.setItem('todos', JSON.stringify(todos));
+            
+            if (parent.classList.contains("completed")){
+                completedTasks--;
             }
-        });
-
-        localStorage.setItem('todos', JSON.stringify(todos));
-        
-        parent.remove();
+            parent.remove();
+            totalTasks--;
+            updateProgress();
+        }
     });
 }
 
@@ -190,11 +215,40 @@ function getToDo(){
             todoItem.appendChild(completeButton);
             todoItem.appendChild(deleteButton);
 
+            //update totalTasks
+            totalTasks++;
+
             if (e[1] === false){
+                completedTasks++;
                 todoItem.classList.add('completed');
             }
 
             todoList.appendChild(todoItem);
         });
     }
+
+    updateProgress();
+}
+
+function updateProgress(){
+    const percentProgress = (completedTasks/totalTasks) * 100;
+    indicator.style.height = percentProgress + '%';
+
+    if (percentProgress < 50){
+        infoBanner.innerText = "You still have " + (totalTasks - completedTasks) + " task(s) to complete!!";
+        indicator.style.backgroundColor = "rgba(253, 29, 29, 1)";
+    } else if (percentProgress > 50 && percentProgress < 70){
+        infoBanner.innerText = "You have " + (totalTasks - completedTasks) + " task(s) left. Keep going!!";
+        indicator.style.backgroundColor = "rgba(252, 176, 69, 1)";
+    } else if (percentProgress < 99){
+        infoBanner.innerText = "Almost there!! " + (totalTasks - completedTasks) + " task(s) left!!";
+        indicator.style.backgroundColor = "rgb(235, 247, 6)";
+    } else {
+        infoBanner.innerText = "You did it!!";
+        indicator.style.backgroundColor = "rgb(12, 199, 56)";
+    }
+}
+
+function showExtra(){
+    extraArea.style.display = "none";
 }

@@ -10,7 +10,41 @@ body {
     color: white;
     font-family: "Poppins", sans-serif;
     min-height: 100vh;
+    display: flex;
 }
+
+.todo-area{
+    flex: 1;
+}
+
+.extra-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.extra-area{
+    min-width: 40vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.progress-bar{
+    width: 50px;
+    height: 30%;
+    background-color: white;
+    position: relative;
+}
+
+.indicator{
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
 
 header, form{
     min-height: 20vh;
